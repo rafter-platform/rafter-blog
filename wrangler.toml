@@ -1,0 +1,10 @@
+name = "rafter-blog"
+type = "webpack"
+account_id = "295f50bb5cbfa94af25bb11d0b5366ff"
+workers_dev = false
+route = "blog.rafter.app/*"
+zone_id = "489bf87e48cb6bb90d1c63821c616279"
+
+[site]
+bucket = "./public"
+entry-point = "workers-site"
