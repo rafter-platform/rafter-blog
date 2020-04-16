@@ -1,6 +1,6 @@
 module.exports = {
   siteMetadata: {
-    title: `Rafter Blog`,
+    title: `Inside Rafter`,
     author: `Josh Larson`,
     description: `Thoughts and discoveries from building Rafter, a serverless deployment platform.`,
     siteUrl: `https://blog.rafter.app/`,

@@ -13,9 +13,10 @@ class Layout extends React.Component {
       header = (
         <h1
           style={{
-            ...scale(1.5),
-            marginBottom: rhythm(1.5),
+            ...scale(1.2),
+            marginBottom: rhythm(1.2),
             marginTop: 0,
+            textAlign: `center`,
           }}
         >
           <Link
@@ -64,7 +65,7 @@ class Layout extends React.Component {
         {header}
         {children}
         <footer>
-          © {new Date().getFullYear()}, Built with
+          © {new Date().getFullYear()}. Built with
           {` `}
           <a href="https://www.gatsbyjs.org">Gatsby</a>
         </footer>
