@@ -1,11 +1,11 @@
 module.exports = {
   siteMetadata: {
-    title: `Gatsby Starter Blog MDX`,
-    author: `Matt Hagner`,
-    description: `An extension of the gatsby starter blog, with support for MDX`,
-    siteUrl: `https://gatsby-starter-blog-mdx-demo.netlify.com/`,
+    title: `Rafter Blog`,
+    author: `Josh Larson`,
+    description: `Thoughts and discoveries from building Rafter, a serverless deployment platform.`,
+    siteUrl: `https://blog.rafter.app/`,
     social: {
-      twitter: `mattinthecouch`,
+      twitter: `jplhomer`,
     },
   },
   plugins: [
@@ -57,12 +57,6 @@ module.exports = {
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        //trackingId: `ADD YOUR TRACKING ID HERE`,
-      },
-    },
     {
       resolve: `gatsby-plugin-feed`,
       options: {
