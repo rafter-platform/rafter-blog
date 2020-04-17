@@ -111,7 +111,7 @@ module.exports = {
             }
             `,
             output: '/rss.xml',
-            title: 'Gatsby RSS feed',
+            title: 'Inside Rafter RSS feed',
           },
         ],
       },
@@ -119,13 +119,13 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `Gatsby Starter Blog`,
-        short_name: `GatsbyJS`,
+        name: `Inside Rafter`,
+        short_name: `Inside Rafter`,
         start_url: `/`,
         background_color: `#ffffff`,
         theme_color: `#663399`,
         display: `minimal-ui`,
-        icon: `content/assets/gatsby-icon.png`,
+        icon: `content/assets/rafter-icon.png`,
       },
     },
     `gatsby-plugin-offline`,
