@@ -3,9 +3,7 @@ import { Link } from 'gatsby'
 
 import { rhythm, scale } from '../utils/typography'
 
-class Layout extends React.Component {
-  render() {
-    const { location, title, children } = this.props
+export default function Layout({ location, title, children, wide }) {
     const rootPath = `${__PATH_PREFIX__}/`
     let header
 
@@ -52,12 +50,13 @@ class Layout extends React.Component {
         </h3>
       )
     }
+
     return (
       <div
         style={{
           marginLeft: `auto`,
           marginRight: `auto`,
-          maxWidth: rhythm(24),
+          maxWidth: rhythm(wide ? 32 : 24),
           padding: `${rhythm(1.5)} ${rhythm(3 / 4)}`,
         }}
       >
@@ -69,8 +68,5 @@ class Layout extends React.Component {
           <a href="https://www.gatsbyjs.org">Gatsby</a>
         </footer>
       </div>
-    )
-  }
+    );
 }
-
-export default Layout
