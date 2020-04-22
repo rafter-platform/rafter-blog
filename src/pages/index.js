@@ -61,7 +61,7 @@ function Journals({ journals }) {
         Journals
       </h2>
       <JournalWarning />
-      <ul style={{ marginBottom: 0 }}>
+      <ul style={{ marginBottom: 0, marginTop: '1em' }}>
         {journals.map(({ node }) => {
           const title = node.frontmatter.title || node.fields.slug
           return (
