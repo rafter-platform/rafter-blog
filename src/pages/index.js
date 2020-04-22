@@ -62,14 +62,18 @@ function Journals({ journals }) {
       </h2>
       <JournalWarning />
       <ul style={{ marginBottom: 0, marginTop: '1em' }}>
-        {journals.map(({ node }) => {
+        {journals.map(({ node }, idx) => {
+          const isLast = idx === journals.length - 1
           const title = node.frontmatter.title || node.fields.slug
           return (
-            <li key={node.fields.slug}>
+            <li
+              key={node.fields.slug}
+              style={{ marginBottom: isLast ? 0 : 'inherit' }}
+            >
               <h3
                 style={{
                   marginTop: 0,
-                  marginBottom: rhythm(1 / 4),
+                  marginBottom: 0,
                   fontSize: '1.1em',
                 }}
               >
