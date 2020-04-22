@@ -3,13 +3,39 @@ title: "A Spark: Why am I building Rafter?"
 date: '2020-04-16T14:38:07.894Z'
 ---
 
-**[I'm building a project called Rafter](https://github.com/jplhomer/rafter)**.
+**I'm building a project called [Rafter](https://github.com/rafter-platform/rafter)**.
 
-It's a serverless hosting platform, powered by Google Cloud. It's catered to full-stack frameworks like Laravel, Rails, and WordPress — but it can host _anything_ that fits in a container.
+It's a container-based serverless hosting platform powered by Google Cloud Run. It caters to full-stack frameworks like Laravel, Rails, and WordPress — but it can host _anything_ that fits in a container.
 
 I plan to write a lot about the technical aspects of this service. But first, I wanted to step back and talk about _why_ I'm building this at all.
 
----
+Here's a set of **four core beliefs** that are driving this product:
+
+### 1. Developers should not have to think about Docker or Kubernetes
+
+If you're building a product or webiste, developer time spent on _building the actual product_ is much better than developer time spent on tooling, debugging Dockerfiles, configuring Helm charts or inspecting Kubernetes ReplicaSets.
+
+I've seen far too many developers attempt to solve a simple issue in a codebase only to be blocked by a day of Docker troubleshooting.
+
+As a developer, **you shouldn't have to know a thing about Docker** to deploy your app.
+
+### 2. There's still value in full-stack frameworks
+
+Microservices and static-generated JAMStack applications are all the rage. They play a great role in the future of our industry, and they are super powerful. But full-stack frameworks like Laravel and Rails are **still valued and used by many products**. It's hard to beat built-in request lifecycles, authentication, middleware, queues, filesystem interaction, and email handling.
+
+These applications deserve to be deployed and scaled as seemlessly as their microservice and JAMStack counterparts.
+
+### 3. You shouldn't have to pay for hosting when your app isn't being used
+
+This is pretty simple. The technology exists. You can find numerous JAMStack-like services with a generous free tier. Container-based serverless options — more likely to support full-stack frameworks — are just starting to offer scale-to-zero features along with those free tiers.
+
+We as developers shouldn't have to waste any more money paying for a $5/mo VPS, hosting side projects nobody ever visits.
+
+### 4. Developer experience (DX) and user experience (UX) are core tenants of a product
+
+I can't tell you how many times I've abandoned a product because of poor DX or UX. If a product is not well-designed — or if it's clear a developer cobbled it together without thinking of how it would be _used_ — it's likely not going to be a great experience in the long run. This is why I've avoided using AWS for so long and been attracted to Google Cloud Platform's more useful dashboards and documentation. DX should be at the forefront of every new tool and API we build.
+
+## The History
 
 In February 2019, I wrote a blog post called [My Dream Side Project](https://creative.jplhomer.org/009-my-dream-side-project/).
 
@@ -22,6 +48,8 @@ In April 2019, Google announced [Cloud Run](https://cloud.google.com/blog/produc
 And in July 2019, Taylor Otwell introduced [Laravel Vapor](https://www.youtube.com/watch?v=XsPeWjKAUt0), which is the exact type of serverless platform I'd envisioned building for Laravel PHP apps, though this was hosted on AWS and powered by Lambdas.
 
 It seems like I'm not the only one who wanted this sort of thing to exist!
+
+I started [building Barkpass](https://building.barkpass.com) in 2019 with my wife, and this is what really drove the spark to create a new platform for serverless deployments on Google Cloud Run. While I still haven't made the transition (I'm paying monthly for a VPS on DigitalOcean), it's truly what got Rafter's wheels turning.
 
 ## Lots of thinking
 
@@ -44,7 +72,7 @@ Fueled by a new sense of focus in a sleep-deprived state, I started building Raf
 
 Feeding my son a bottle or rocking him to sleep gave me just enough time to think about my next coding move. And had I not been pressed for time, I probably wouldn't have been as productive.
 
-The project is [open-source](https://github.com/jplhomer/rafter) right now. It's built with [Laravel](https://laravel.com/) with help from [Tailwind](https://tailwindcss.com), [Laravel Livewire](https://laravel-livewire.com/), and [Alpine.js](https://github.com/alpinejs/alpine). _I'm not using any major JavaScript framework like React or Vue... yet_. 😱
+The project is [open-source](https://github.com/rafter-platform/rafter) right now. It's built with [Laravel](https://laravel.com/) with help from [Tailwind](https://tailwindcss.com), [Laravel Livewire](https://laravel-livewire.com/), and [Alpine.js](https://github.com/alpinejs/alpine). _I'm not using any major JavaScript framework like React or Vue... yet_. 😱
 
 The actual app is not yet in a working state, nor is it ready for alpha/beta testers. _Soon_ though, I hope.
 
@@ -65,4 +93,4 @@ I have anti-goals, too:
 
 ---
 
-I'm planning to write about my inspirations, how the darn thing works, and lots of other learnings. Hope you enjoy the ride as much as I do!
+I'm planning to write about my inspirations, how the darn thing works, unstructured journals/logs about the building process, and lots of other learnings. Hope you enjoy the ride as much as I do!
