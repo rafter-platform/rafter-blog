@@ -1,6 +1,48 @@
 ---
-title: "What is Rafter?"
-date: "2020-04-16 20:53:25"
+title: 'What is Rafter?'
+date: '2020-04-23 09:54:54'
 ---
 
-Hey man
+Great question! I'll answer in a few different ways.
+
+## 🔥 The TL;DR Description
+
+Rafter is a **serverless deployment platform** powered by Google Cloud Run. It supports popular full-stack frameworks like Laravel, Rails, WordPress and more.
+
+The **serverless** part means you don't have to worry about servers. It's container-based, but you don't even need to worry about Docker! Rafter acts as an abstraction layer over those details.
+
+For developers, this means:
+
+- Connect an existing GitHub, GitLab, or Bitbucket repository and deploy instantly.
+- Or type `rafter deploy` to push a project from the command line.
+- Your project scales to 0, meaning you're not paying for resources not being used.
+- You own the entire stack: it lives in your Google Cloud account, so you can walk away from Rafter whenever you want.
+- **You can focus on building your product instead of your infrastructure**.
+
+## 👨‍💻 The Technical Description
+
+Rafter projects are created with several entrypoints in mind:
+
+- Source control providers (GitHub, Gitlab, etc)
+- Command line pushes (manually typing `rafter deploy`)
+
+When a new input is received, Rafter kicks off a chain of jobs to:
+
+1. **Create a Docker image using Google Cloud Build**. Rafter uses the type of your project (Rails, Laravel, Node) to provide a basic `Dockerfile` to use (`php` for Laravel, `ruby` for Rails), meaning you don't have to provide your own.
+1. **Deploy to Google Cloud Run**. Rafter uses the image to create new `web` and `worker` services in Cloud Run.
+1. **Inject Environment Variables**. Using a handy Secrets and Variables Management UI, Rafter injects the required environment variables into your application.
+1. **Provision and Manage a Database**. If requested, Rafter creates a Cloud SQL database, connects it to your Cloud Run services, and injects the correct variables.
+1. **Manage Queues**: Rafter creates a new queue in Cloud Tasks for your service, and provides first-class integrations into your framework to integrate queue workers in a serverless environment.
+1. **Schedule Cloud Jobs**: Rafter uses Cloud Scheduler to ping your service using first-class framework integrations to run scheduled jobs.
+1. **Run Commands**: Using PubSub, Rafter integrates with your framework to run CLI commands (think: `rails` or `artisan`).
+1. **Provide Logs**: Rafter provides a UI to inspect the logs from your application as well as other metrics.
+
+## Other Descriptions
+
+- Rafter is like [Heroku](https://heroku.com), except you own the stack. Heroku uses AWS behind the scenes, but you pay for their services at a markup from AWS base costs. With Rafter, you pay Google Cloud for whatever costs you incur.
+- Rafter is like [Laravel Vapor](https://vapor.laravel.com), but for Google Cloud — and it supports multiple frameworks and languages instead of just PHP and Laravel.
+- Rafter is a wrapper around [Google Cloud Run](https://cloud.google.com/run). You can totally do everything Rafter does manually, except you need to know Docker, Cloud Run APIs, configuration management, and more.
+- Rafter is like Google App Engine, only it supports additional runtimes (anything that will fit in a Docker container).
+- Rafter is Kuberetes, only several abstractions removed (Rafter » Cloud Run » Knative » Kubernetes).
+
+I'm hoping to put together an even consider definition in the future. Stay tuned!
