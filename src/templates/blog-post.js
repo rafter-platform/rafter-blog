@@ -6,18 +6,25 @@ import Bio from '../components/Bio'
 import Layout from '../components/Layout'
 import SEO from '../components/seo'
 import { rhythm, scale } from '../utils/typography'
+import JournalWarning from '../components/JournalWarning'
 
-class BlogPostTemplate extends React.Component {
-  render() {
-    const post = this.props.data.mdx
-    const siteTitle = this.props.data.site.siteMetadata.title
-    const { previous, next } = this.props.pageContext
-    console.log(this.props.pageContext)
+export default function BlogPostTemplate({ data, pageContext, location }) {
+  const post = data.mdx
+  const {
+    frontmatter: { type },
+  } = post
+  const isJournal = type === 'journal'
+  const siteTitle = data.site.siteMetadata.title
+  const { previous, next } = pageContext
 
-    return (
-      <Layout location={this.props.location} title={siteTitle}>
-        <SEO title={post.frontmatter.title} description={post.excerpt} />
-        <h1>{post.frontmatter.title}</h1>
+  return (
+    <Layout location={location} title={siteTitle}>
+      <SEO title={post.frontmatter.title} description={post.excerpt} />
+      <h1>
+        {isJournal ? 'Journal: ' : ''}
+        {post.frontmatter.title}
+      </h1>
+      {!isJournal && (
         <p
           style={{
             ...scale(-1 / 5),
@@ -28,44 +35,53 @@ class BlogPostTemplate extends React.Component {
         >
           {post.frontmatter.date}
         </p>
-        <MDXRenderer>{post.body}</MDXRenderer>
-        <hr
+      )}
+      {isJournal && (
+        <div
           style={{
-            marginBottom: rhythm(1),
-          }}
-        />
-        <Bio />
-
-        <ul
-          style={{
-            display: `flex`,
-            flexWrap: `wrap`,
-            justifyContent: `space-between`,
-            listStyle: `none`,
-            padding: 0,
+            backgroundColor: '#ffffda',
+            padding: '1em',
+            marginBottom: '1em',
           }}
         >
-          <li>
-            {previous && (
-              <Link to={previous.fields.slug} rel="prev">
-                ← {previous.frontmatter.title}
-              </Link>
-            )}
-          </li>
-          <li>
-            {next && (
-              <Link to={next.fields.slug} rel="next">
-                {next.frontmatter.title} →
-              </Link>
-            )}
-          </li>
-        </ul>
-      </Layout>
-    )
-  }
-}
+          <JournalWarning />
+        </div>
+      )}
+      <MDXRenderer>{post.body}</MDXRenderer>
+      <hr
+        style={{
+          marginBottom: rhythm(1),
+        }}
+      />
+      <Bio />
 
-export default BlogPostTemplate
+      <ul
+        style={{
+          display: `flex`,
+          flexWrap: `wrap`,
+          justifyContent: `space-between`,
+          listStyle: `none`,
+          padding: 0,
+        }}
+      >
+        <li>
+          {previous && (
+            <Link to={previous.fields.slug} rel="prev">
+              ← {previous.frontmatter.title}
+            </Link>
+          )}
+        </li>
+        <li>
+          {next && (
+            <Link to={next.fields.slug} rel="next">
+              {next.frontmatter.title} →
+            </Link>
+          )}
+        </li>
+      </ul>
+    </Layout>
+  )
+}
 
 export const pageQuery = graphql`
   query($slug: String!) {
@@ -80,6 +96,7 @@ export const pageQuery = graphql`
       excerpt(pruneLength: 160)
       frontmatter {
         title
+        type
         date(formatString: "MMMM DD, YYYY")
       }
       body
