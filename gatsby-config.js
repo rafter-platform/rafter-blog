@@ -52,6 +52,9 @@ module.exports = {
           {
             resolve: `gatsby-remark-smartypants`,
           },
+          {
+            resolve: `gatsby-remark-autolink-headers`,
+          },
         ],
       },
     },

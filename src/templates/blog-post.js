@@ -16,14 +16,14 @@ export default function BlogPostTemplate({ data, pageContext, location }) {
   const isJournal = type === 'journal'
   const siteTitle = data.site.siteMetadata.title
   const { previous, next } = pageContext
+  const title = isJournal
+    ? `Journal: ${post.frontmatter.title}`
+    : post.frontmatter.title
 
   return (
     <Layout location={location} title={siteTitle}>
-      <SEO title={post.frontmatter.title} description={post.excerpt} />
-      <h1>
-        {isJournal ? 'Journal: ' : ''}
-        {post.frontmatter.title}
-      </h1>
+      <SEO title={title} description={post.excerpt} />
+      <h1>{title}</h1>
       {!isJournal && (
         <p
           style={{

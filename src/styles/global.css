@@ -5,3 +5,14 @@
   --grvsc-line-highlighted-border-width: 2px;
   /* prettier-ignore-end */
 }
+
+.anchor.before {
+  padding-right: 0.2em;
+}
+
+@media (min-width: 500px) {
+  .anchor.before {
+    position: absolute;
+    transform: translateX(-100%);
+  }
+}

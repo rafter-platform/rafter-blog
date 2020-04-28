@@ -60,7 +60,6 @@ function Journals({ journals }) {
       >
         Journals
       </h2>
-      <JournalWarning />
       <ul style={{ marginBottom: 0, marginTop: '1em' }}>
         {journals.map(({ node }, idx) => {
           const isLast = idx === journals.length - 1
