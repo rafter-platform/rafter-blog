@@ -96,3 +96,89 @@ Available commands:
 [⚡️ I've opened a PR for the Laravel Core Package here](https://github.com/rafter-platform/laravel-rafter-core/pull/1).
 
 Next, let's focus on the **Rafter integration**. This will be a little more work:
+
+- Let's have fun with some **UI-Driven Development**. How do we want the Commands UI to look?
+- I'm sure we'll want to add a tab under the `environments.show` partial:
+
+![Tabs](./tabs.png)
+
+- This is a simple thing to add, but where do we point? Probably something like `projects.environments.commands.index`? I'm really not digging these nested paths. I'm not married to this setup. I'm also not a huge fan of having to create a controller and a view just to render a couple lines of a component, probably Livewire.
+- Livewire author [Caleb Porzio demonstrated a Route helper](https://laravel-livewire.com/screencasts/s1-setting-up-the-component) in a recent screencast. I wonder if I can start taking advantage of this, and use Livewire primarily for these small settings screens and tabs without having to use controllers?
+- Or maybe I just use anonymous, inline functions instead?
+
+Meh, I'll do an inline function:
+
+```php
+// Commands
+Route::get('projects/{project}/environments/{environment}/commands', function (\App\Project $project, \App\Environment $environment) {
+    return view('environments.commands', [
+        'project' => $project,
+        'environment' => $environment,
+    ]);
+})
+    ->name('projects.environments.commands.index');
+```
+
+I hate it already. Onward!
+
+- Let's mock up what we want the commands index to look like. Probably a table of some sort, similar to our deployments list table.
+- WAIT... this probably needs to be paginated. And I would be remiss if we built this without using Livewire's fancy AJAX pagination. Let's just make `CommandsList` a Livewire component 😈
+
+```bash
+php artisan make:livewire CommandsList
+```
+
+Then let's try simplifying the route:
+
+```php
+Route::livewire('projects/{project}/environments/{environment}/commands', 'commands-list')
+    ->layout('components.environment')
+    ->name('projects.environments.commands.index');
+```
+
+- Ugh. Update: this approach requires you to use a traditional Laravel layout file with stuff like `@yield('content')`. I'm using a newer component-based layout approach, using `{{ $slot }}`.
+- I'm just gonna switch back to using a normal view, which renders a Livewire component.
+
+Here's `environments/commands.blade.php`
+
+```html
+<x-layout>
+  <x-environment :project="$project" :environment="$environment">
+    <x-subtitle>Commands</x-subtitle>
+
+    <livewire:commands-list :environment="$environment" />
+  </x-environment>
+</x-layout>
+```
+
+And the `CommandsList.php` Livewire component:
+
+```php
+<?php
+
+namespace App\Http\Livewire;
+
+use App\Environment;
+use Livewire\Component;
+
+class CommandsList extends Component
+{
+    public $environment;
+
+    public function mount(Environment $environment)
+    {
+        $this->environment = $environment;
+    }
+
+    public function render()
+    {
+        return view('livewire.commands-list');
+    }
+}
+```
+
+And here's some inital UI, stubbed out with fake data:
+
+![Commands list with stubs](./commands-1.png)
+
+I dig it so far!
