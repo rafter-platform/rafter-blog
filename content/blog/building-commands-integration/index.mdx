@@ -1,0 +1,13 @@
+---
+title: 'Building Commands Integration'
+date: '2020-04-28 09:19:29'
+type: journal
+---
+
+This is heavily inspired by [Laravel Vapor](https://vapor.laravel.com), where you can fire off a command to a worker service. It hooks into framework-specific CLI utilities like `php artisan` for Laravel, `rails` for Rails, and `wp` for WordPress.
+
+### April 28, 2020
+
+- Decided that Rafter will expose a **Commands** UI that allows a user to create a new `Command` model, which is then dispatched via HTTP to the worker service
+- Did lots of research on how to properly authenticate the request to the non-public worker service. If you're using a GCP service like Cloud Tasks or PubSub, it's super easy because Google handles authenticating with the receiving service just fine. However, we need to call this synchronous request ourselves and consume the response to display it to the user. This means we need to [sign the request ourselves with an OIDC token](https://cloud.google.com/run/docs/authenticating/service-to-service).
+- Found a [useful code snippet](https://cloud.google.com/iap/docs/authentication-howto#authenticating_from_a_service_account) in the GCP docs for their IAP service (which we aren't actually using). But it demonstrates how you can leverage the Google-provided `ApplicationDefaultCredentials` class to take care of all the messy JWT signing. All you have to do is pass an `audience` parameter (which, in this case, is the URL of the worker Cloud Run service), and you get an OIDC token ✨.
