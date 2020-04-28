@@ -65,4 +65,33 @@ Time to test this baby out! I have a [Rafter Laravel Example](https://github.com
 composer-link ../laravel-rafter-core
 ```
 
-And then I want to test it by calling the endpoint using some sort of utility.
+- **Update**: This didn't work 🙃 because I'm already referencing a package published on Packagist.
+- Instead, I had to add the git repository and reference `dev-{branch}` e.g. `dev-commands` as the version name, and then run `composer update`. Thanks to [this blog post](https://lornajane.net/posts/2014/use-a-github-branch-as-a-composer-dependency)!
+
+And my curl test worked great 🎉:
+
+```bash
+curl -d '{"command": "list"}' -H "Content-Type: application/json" -X POST http://rafter-example-laravel.test/_rafter/command/run
+Laravel Framework 7.9.2
+
+Usage:
+  command [options] [arguments]
+
+Options:
+  -h, --help            Display this help message
+  -q, --quiet           Do not output any message
+  -V, --version         Display this application version
+      --ansi            Force ANSI output
+      --no-ansi         Disable ANSI output
+  -n, --no-interaction  Do not ask any interactive question
+      --env[=ENV]       The environment the command should run under
+  -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+Available commands:
+  clear-compiled       Remove the compiled class file
+  ...
+```
+
+[⚡️ I've opened a PR for the Laravel Core Package here](https://github.com/rafter-platform/laravel-rafter-core/pull/1).
+
+Next, let's focus on the **Rafter integration**. This will be a little more work:
