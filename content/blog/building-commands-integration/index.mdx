@@ -26,10 +26,11 @@ Route::group(['middleware' => [VerifyGoogleOidcToken::class, EnsureRafterWorker:
 
 Anyway, carrying on. I'm adding a new route to the `Rafter` class:
 
-```php
+```php{5}
 class Rafter
 {
-    //
+    const QUEUE_ROUTE = '/_rafter/queue/work';
+    const SCHEDULE_ROUTE = '/_rafter/schedule/run';
     const COMMAND_ROUTE = '/_rafter/command/run';
 ```
 
