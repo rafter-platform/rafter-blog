@@ -16,7 +16,14 @@ export const Code = ({ codeString, language, ...props }) => {
     return (
       <Highlight {...defaultProps} code={codeString} language={language}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre className={className} style={style}>
+          <pre
+            className={className}
+            style={{
+              ...style,
+              overflowX: 'auto',
+              padding: '1em',
+            }}
+          >
             {tokens.map((line, i) => (
               <div {...getLineProps({ line, key: i })}>
                 {line.map((token, key) => (

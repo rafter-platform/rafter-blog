@@ -11,3 +11,48 @@ This is heavily inspired by [Laravel Vapor](https://vapor.laravel.com), where yo
 - Decided that Rafter will expose a **Commands** UI that allows a user to create a new `Command` model, which is then dispatched via HTTP to the worker service
 - Did lots of research on how to properly authenticate the request to the non-public worker service. If you're using a GCP service like Cloud Tasks or PubSub, it's super easy because Google handles authenticating with the receiving service just fine. However, we need to call this synchronous request ourselves and consume the response to display it to the user. This means we need to [sign the request ourselves with an OIDC token](https://cloud.google.com/run/docs/authenticating/service-to-service).
 - Found a [useful code snippet](https://cloud.google.com/iap/docs/authentication-howto#authenticating_from_a_service_account) in the GCP docs for their IAP service (which we aren't actually using). But it demonstrates how you can leverage the Google-provided `ApplicationDefaultCredentials` class to take care of all the messy JWT signing. All you have to do is pass an `audience` parameter (which, in this case, is the URL of the worker Cloud Run service), and you get an OIDC token ✨.
+
+Let's start with the **Laravel Rafter Core** integration, since that's the easiest. In the service provider for the Laravel package, I [register the worker-specific routes](https://github.com/rafter-platform/laravel-rafter-core/blob/594cadcec5891114cbe905208a350a0b68d1e332/src/RafterServiceProvider.php#L59-L62):
+
+```php
+Route::group(['middleware' => [VerifyGoogleOidcToken::class, EnsureRafterWorker::class]], function () {
+    Route::post(Rafter::QUEUE_ROUTE, 'Rafter\Http\Controllers\RafterQueueWorkerController');
+    Route::post(Rafter::SCHEDULE_ROUTE, 'Rafter\Http\Controllers\RafterScheduleRunController');
+});
+```
+
+- The `VerifyGoogleOidcToken` middleware is custom-built to verify an incoming request contains the proper Authorization header....
+- And now that I type all of this out, I realize this probably isn't even necessary 🙈 since Google Cloud Run already authenticates the request. D'oh.
+
+Anyway, carrying on. I'm adding a new route to the `Rafter` class:
+
+```php
+class Rafter
+{
+    //
+    const COMMAND_ROUTE = '/_rafter/command/run';
+```
+
+As well as a new route in the service provider, pointing to a new `RafterCommandRunController`:
+
+```php
+namespace Rafter\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Artisan;
+
+class RafterCommandRunController extends Controller
+{
+    public function __invoke(Request $request)
+    {
+        Artisan::call($request->command);
+        return Artisan::output();
+    }
+}
+```
+
+It's pretty straightforward:
+
+- It uses the `Artisan` Facade to call a given command that is passed in through a request parameter
+- Then it returns the output of the command, also using the `Artisan` facade.
