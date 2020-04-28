@@ -56,3 +56,13 @@ It's pretty straightforward:
 
 - It uses the `Artisan` Facade to call a given command that is passed in through a request parameter
 - Then it returns the output of the command, also using the `Artisan` facade.
+
+Time to test this baby out! I have a [Rafter Laravel Example](https://github.com/rafter-platform/rafter-example-laravel) project locally that I'll use.
+
+- First, I'll borrow [Caleb Porzio's `composer-link` bash alias](https://calebporzio.com/bash-alias-composer-link-use-local-folders-as-composer-dependancies/) to mount the local package into the project:
+
+```bash
+composer-link ../laravel-rafter-core
+```
+
+And then I want to test it by calling the endpoint using some sort of utility.
