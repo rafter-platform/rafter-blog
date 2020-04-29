@@ -503,3 +503,98 @@ public function runCommandOnWorker(): string
 - I confirmed that it works as expected on the console!
 
 ![The command output](./output-1.png)
+
+- Our final step in all of this is to extract it to an async job. Let's go ahead and do that:
+
+```bash
+php artisan make:job DispatchCommand
+```
+
+Here's what that looks like:
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use App\Command;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+
+class DispatchCommand implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $command;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    public function __construct(Command $command)
+    {
+        $this->command = $command;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        $this->command->markRunning();
+
+        $this->command->runCommandOnWorker();
+    }
+}
+```
+
+And here's how I'm dispatching it inside `Command`:
+
+```php
+public function dispatch()
+{
+    DispatchCommand::dispatch($this);
+}
+```
+
+Let's... see how it works? I'm gonna record the first attempt. No polish on this: you'll see the real thing!
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/VPsi3Yh1zK0"
+  frameborder="0"
+  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+🎉🎉🎉
+
+Nice. I had to manually refresh, because I forgot I haven't added live polling yet.
+
+Let's go ahead and add live polling by adding `wire:poll` to the root of the component:
+
+```html{1}
+<div wire:poll>
+  <div class="flex justify-between items-center mb-4">
+    <span>
+      {{ $this->label }} {{ $command->updated_at->diffForHumans() }} @if
+      ($command->isFinished()) - {{ $command->elapsedTime() }} @endif
+    </span>
+    <span>
+      <x-status :status="$command->status" />
+    </span>
+  </div>
+  <div class="font-mono p-4 text-sm bg-white">
+    <pre>{{ $command->output }}</pre>
+  </div>
+</div>
+```
+
+Easy as that!
