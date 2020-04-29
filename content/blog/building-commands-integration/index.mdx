@@ -237,5 +237,168 @@ Looks pretty spiffy:
 ![More commands layout](./commands-2.png)
 
 - Now to actually wire this thing up.
-- **But first**, let's see our UI-driven development through to the finish line by stubbing out a `commands.show` page.
 - This will be an actual controller route and Blade view - handy for being able to link to existing commands.
+- Let's go ahead and create the `Command` model, controller, and other fun stuff:
+
+```bash
+php artisan make:model Command -a
+```
+
+Here's my migration:
+
+```php
+Schema::create('commands', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('environment_id')->index();
+    $table->unsignedBigInteger('user_id');
+    $table->string('command');
+    $table->longText('output')->nullable();
+    $table->string('status')->default('pending');
+    $table->timestamps();
+
+    $table->foreign('environment_id')
+        ->references('id')->on('environments')
+        ->onDelete('cascade');
+});
+```
+
+And let's generate a `CommandOutput` Livewire component:
+
+```bash
+php artisan make:livewire CommandOutput
+```
+
+`CommandOutput.php` is going to accept the `Command` as its only argument:
+
+```php
+<?php
+
+namespace App\Http\Livewire;
+
+use App\Command;
+use Livewire\Component;
+
+class CommandOutput extends Component
+{
+    public $command;
+
+    public function mount(Command $command)
+    {
+        $this->command = $command;
+    }
+
+    public function render()
+    {
+        return view('livewire.command-output');
+    }
+}
+```
+
+Let's add a view, `environments.commands.show`, to house the new component. Something like this:
+
+```html
+<x-layout>
+  <x-environment :project="$project" :environment="$environment">
+    <x-subtitle>Command: <code>{{ $command->command }}</code></x-subtitle>
+
+    <livewire:command-output :command="$command" />
+  </x-environment>
+</x-layout>
+```
+
+Now let's chat about the flow for actually creating and dispatching a command:
+
+1. User enters new command in the index view and clicks the **Run** button (or presses Enter).
+1. Livewire fires the `runCommand` method, which creates a new `Command` model, and fires the `$command->dispatch()` method on the model.
+1. Livewire redirects the user to `commands.show` which will show the `CommandOutput` component. It will poll for the status and display the output when ready.
+1. The model then marks itself as pending with `$this->markPending()`, and dispatches a new `DispatchCommand` job.
+1. Inside the job, a signed request is made to the worker URL with the `command` payload of the current `Command`.
+1. The response is returned and recorded in `$command->update([ 'output' => $responseBodyText ])`
+1. The command is marked has having succeeded with `$command->markFinished()`. We also want to handle any error cases, designating with `$command->markFailed()`.
+1. The output is automatically displayed to the user inside the Livewire component.
+
+So all of these things are pretty straightforward, except for this:
+
+> Inside the job, a signed request is made to the worker URL with the `command` payload of the current `Command`.
+
+It's gonna involve several moving pieces. Let's start from the top, though.
+
+Moving back to our creation form, let's define some logic inside the `runCommand` method:
+
+```php
+public function runCommand()
+{
+    $this->authorize('update', $this->environment);
+
+    $this->validate([
+        'command' => ['required', 'string'],
+    ]);
+
+    $command = $this->environment->commands()->create([
+        'command' => $this->command,
+        'user_id' => request()->user()->id,
+    ]);
+
+    $command->dispatch();
+
+    return redirect()->route('projects.environments.commands.show', [
+        $this->environment->project,
+        $this->environment,
+        $command
+    ]);
+}
+```
+
+_Gosh I really dislike these nested routes. I might change them sometime to be flat._
+
+Cool. Time to run my migrations and... try this out?
+
+💥 **Issue: Mass-assignment**. Sigh.
+
+Let's update our `Command` model to remove mass-assignment protection and add some helper methods while we're at it:
+
+```php
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Command extends Model
+{
+    const STATUS_PENDING = 'pending';
+    const STATUS_RUNNING = 'running';
+    const STATUS_FINISHED = 'finished';
+    const STATUS_FAILED = 'failed';
+
+    protected $guarded = [];
+
+    public function dispatch()
+    {
+        # code...
+    }
+
+    public function markRunning()
+    {
+        $this->update(['status' => static::STATUS_RUNNING]);
+    }
+
+    public function markFinished(string $output)
+    {
+        $this->update([
+            'status' => static::STATUS_FINISHED,
+            'output' => $output,
+        ]);
+    }
+
+    public function markFailed(string $output)
+    {
+        $this->update([
+            'status' => static::STATUS_FAILED,
+            'output' => $output,
+        ]);
+    }
+}
+```
+
+✨OK my redirect is working at least. I'll move on to new steps tomorrow 🌄.
