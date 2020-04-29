@@ -186,4 +186,56 @@ I dig it so far!
 - Next, let's work on the **new command** view.
 - Again, I'm torn on how I want this to work.
 - It could be a simple Blade template with a form which POSTs to a controller, and redirects the user to a `show` page with the results.
-- But I want this to feel _interactive_, as in: when you click **Run**, you see some sort of a spininer
+- But I want this to feel _interactive_, as in: when you click **Run**, you see some sort of a spinner
+
+_Several hours later..._
+
+- OK I originally planned to make this a synchronous action, shying away from the notion that I might make this an asynchronous `DispatchCommand` job.
+- However, making it an async job makes my UI decision a bit easier: I'll create the command, dispatch it onto a queue, and immediately redirect the user to the `commands.show` page. This will be another Livewire component which polls for updates to the output.
+- Plus, you have to think that _sometime_ a user is going to run a super lengthy artisan command. We want Rafter to _feel fast_ even if their worker service is _slow_.
+
+OK - with these plans in mind, let's start in on a new view for **New Commands**.
+
+- I think I'm gonna make it a Livewire component for the hell of it. Might add some cool functionality later on, like autocompleting commands based on project, etc. Plus this is going to contain some logic, e.g. prepending the `php artisan` for the user alongside the input.
+- ~Adding a new view and route for `commands.show`.~ NOPE... let's just add the input to the top of `commands.index` for simplicity.
+
+At the top of my existing `CommandsList` Livewire component, I've added a new form:
+
+```html
+<div class="mb-4">
+  <form wire:submit.prevent="runCommand">
+    <label for="command" class="sr-only">
+      Run a new command
+    </label>
+    <div class="mt-1 flex rounded-l-md shadow-sm">
+      <span
+        class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 border-r-0"
+      >
+        php artisan
+      </span>
+      <input
+        wire:model="newCommand"
+        id="command"
+        class="form-input flex-1 block w-full px-3 py-2 rounded-none sm:leading-5 autofocus"
+        placeholder="command"
+      />
+      <span class="inline-flex rounded-r-md shadow-sm">
+        <button
+          type="submit"
+          class="inline-flex items-center px-4 py-2 border border-transparent leading-5 font-medium rounded-r-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition ease-in-out duration-150"
+        >
+          Run
+        </button>
+      </span>
+    </div>
+  </form>
+</div>
+```
+
+Looks pretty spiffy:
+
+![More commands layout](./commands-2.png)
+
+- Now to actually wire this thing up.
+- **But first**, let's see our UI-driven development through to the finish line by stubbing out a `commands.show` page.
+- This will be an actual controller route and Blade view - handy for being able to link to existing commands.
