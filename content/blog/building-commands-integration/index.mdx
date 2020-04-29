@@ -402,3 +402,55 @@ class Command extends Model
 ```
 
 ✨OK my redirect is working at least. I'll move on to new steps tomorrow 🌄.
+
+### April 29, 2020
+
+Good morning! Let's keep going.
+
+- I think I'll stub out a `command.show` layout, since right now it's blank.
+- Probably just show the command name, when it ran, its current status, and below we can print out the results.
+
+```html
+<div>
+  <div class="flex justify-between items-center mb-4">
+    <span>
+      {{ $this->label }} {{ $command->updated_at->diffForHumans() }} @if
+      ($command->isFinished()) - {{ $command->elapsedTime() }} @endif
+    </span>
+    <span>
+      <x-status :status="$command->status" />
+    </span>
+  </div>
+  <div class="font-mono p-4 text-sm bg-white">{{ $command->output }}</div>
+</div>
+```
+
+- I added some new logic in the component itself to provided a computed property `label` so we can say "Ran 10s ago" or "Started running 1s ago", etc
+
+```php
+public function getLabelProperty(): string
+{
+    if ($this->command->isRunning()) {
+        return 'Started running';
+    } elseif ($this->command->isFinished()) {
+        return 'Ran';
+    } elseif ($this->command->isFailed()) {
+        return 'Failed';
+    }
+
+    return 'Created';
+}
+```
+
+- I also added a `$command->elapsedTime()` to get the total runtime of the command.
+- No idea whether this works.
+
+```php
+public function elapsedTime(): string
+{
+    return $this->updated_at->longAbsoluteDiffForHumans($this->created_at);
+}
+```
+
+- Now that we have some UI, let's make it work behind the scenes!
+- I'm going to create a job and the logic to call the worker service next.
