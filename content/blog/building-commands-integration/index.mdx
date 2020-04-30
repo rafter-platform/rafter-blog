@@ -598,3 +598,30 @@ Let's go ahead and add live polling by adding `wire:poll` to the root of the com
 ```
 
 Easy as that!
+
+- I've done some redesigning. Not gonna talk about it in-depth, but I feel better about the way things look.
+- I wish there were a way to conditionally trigger Livewire polling. This is probably possible, and I might add a PR for it. BTW I tried conditionally adding `livewire:poll` using Blade directives, but it looks like the component keeps trying to fetch a new partial at the poll interval after it's mounted, regardless of whether the new partial has the poll directive.
+
+⚠️ I've now come across some things we should tidy up:
+
+- Failed commands inside `laravel-rafter-core` result in 500 errors. We probably do not want this; rather, we want to catch the errors and return them in a 200 response.
+- We need to add some authorizations to a `CommandPolicy` to ensure rando users cannot view other users' commands.
+- I wonder if we can stream Artisan responses back to Rafter and update the `output` as the stream comes back?
+
+Let's start with the command cleanup. Inside the `RafterCommandRunController`:
+
+```php
+public function __invoke(Request $request)
+{
+    try {
+        Artisan::call($request->command);
+        return Artisan::output();
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+}
+```
+
+- Hmm this works, but should it really be a 200 response? Should we use some sort of 4xx or 5xx status code? I wonder if it will feel odd to see a command as green "Finished" but have an error output.
+- Meh I'll stick with 200 for now.
+- This is better!
