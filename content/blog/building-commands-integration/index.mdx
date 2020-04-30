@@ -625,3 +625,160 @@ public function __invoke(Request $request)
 - Hmm this works, but should it really be a 200 response? Should we use some sort of 4xx or 5xx status code? I wonder if it will feel odd to see a command as green "Finished" but have an error output.
 - Meh I'll stick with 200 for now.
 - This is better!
+
+### April 30, 2020
+
+Now, let's add a policy and a test to authorize the Command routes:
+
+```bash
+php artisan make:test CommandControllerTest
+```
+
+In this test, we'll create a few commands for a given user's environment, and then an additional command that doesn't belong to the user. We'll assert that the user can only see _their_ commands:
+
+```php
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
+
+class CommandControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected $user;
+    protected $other;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = factory('App\User')->create();
+        $this->other = factory('App\Command')->create();
+    }
+
+    public function test_user_can_view_their_commands()
+    {
+        $project = factory('App\Project')->create([
+            'team_id' => $this->user->currentTeam->id,
+        ]);
+
+        $environment = factory('App\Environment')->create([
+            'project_id' => $project->id,
+        ]);
+
+        $commands = factory('App\Command', 3)->create([
+            'environment_id' => $environment->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        // Also ensure command created by another user on the same team is visible
+        $otherTeamMember = factory('App\User')->create();
+        $this->user->currentTeam->users()->attach($otherTeamMember);
+
+        $otherCommandOnTeam = factory('App\Command')->create([
+            'environment_id' => $environment->id,
+            'user_id' => $otherTeamMember->id,
+        ]);
+
+        $this->user->currentTeam->refresh();
+
+        $response = $this->actingAs($this->user)
+            ->get(route('projects.environments.commands.index', [$project, $environment]))
+            ->assertSuccessful();
+
+        $commands->each(function ($command) use ($response) {
+            $response->assertSee($command->command);
+        });
+
+        $response->assertSee($otherCommandOnTeam->command);
+
+        $response->assertDontSee($this->other->command);
+
+        $this->get(route('projects.environments.commands.show', [$project, $environment, $commands->first()]))
+            ->assertSuccessful();
+
+        $this->get(route('projects.environments.commands.show', [
+            $this->other->environment->project,
+            $this->other->environment,
+            $this->other
+        ]))
+            ->assertForbidden();
+    }
+}
+```
+
+Of course, we'll need to update the Command factory with some real stuff first:
+
+```php
+use App\Command;
+use Faker\Generator as Faker;
+
+$factory->define(Command::class, function (Faker $faker) {
+    return [
+        'command' => 'route:list',
+        'user_id' => factory('App\User'),
+        'environment_id' => factory('App\Environment'),
+        'status' => 'pending',
+    ];
+});
+```
+
+Now let's run the test and see what we get!
+
+We got one failing test, here:
+
+```bash
+$ php artisan test
+
+There was 1 failure:
+
+1) Tests\Feature\CommandControllerTest::test_user_can_view_their_commands
+Response status code [200] is not a forbidden status code.
+Failed asserting that false is true.
+```
+
+This means that the user was able to view a different user's commands. Let's fix that using a Policy:
+
+```bash
+php artisan make:policy CommandPolicy -m Command
+```
+
+And let's define a policy for the `viewAny` and `view` methods, since those will correspond to the `index` and `show` controller methods:
+
+```php
+/**
+ * Determine whether the user can view any commands.
+ *
+ * @param  \App\User  $user
+ * @return mixed
+ */
+public function viewAny(User $user)
+{
+    return true;
+}
+
+/**
+ * Determine whether the user can view the command.
+ *
+ * @param  \App\User  $user
+ * @param  \App\Command  $command
+ * @return mixed
+ */
+public function view(User $user, Command $command)
+{
+    return $user->currentTeam->is($command->environment->project->team);
+}
+```
+
+Finally, let's instruct the `CommandController` to authorize its methods against a policy in the constructor:
+
+```php
+public function __construct()
+{
+    $this->authorizeResource('App\Command');
+}
+```
+
+Cool! Running the test again... and everything passes! 🎉
