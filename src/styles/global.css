@@ -16,3 +16,11 @@
     transform: translateX(-100%);
   }
 }
+
+p > code,
+li > code {
+  background-color: #fefcbf;
+  color: #744210;
+  padding: 0 0.1em;
+  display: inline-block;
+}

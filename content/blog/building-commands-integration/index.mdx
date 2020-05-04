@@ -782,3 +782,40 @@ public function __construct()
 ```
 
 Cool! Running the test again... and everything passes! 🎉
+
+### May 4, 2020
+
+One final thing I want to do before shipping: DRY up the `php artisan` prefix.
+
+- This will change per-project: `rails` or `wp` etc.
+- I'm also considering finding a way to execute a shell command directly, giving the user total access to the shell, rather than force them to go through a hardcoded utility library.
+- But for now, let's find a place to start the "command prefix" for Laravel projects, and pull it from there. In `Project.php`:
+
+```php
+/**
+ * Get the prefix for running Commands for a given project type.
+ *
+ * @return string
+ */
+public function commandPrefix(): string
+{
+    if ($this->type == 'laravel') {
+        return 'php artisan';
+    }
+
+    return '';
+}
+```
+
+- Good enough for now - I'll probably revisit this and make some sort of abstraction for `ProjectType` eventually.
+- Finally, not all project types are going to have Command capabilities (at least to start)! Let's ensure we only show the Command UI for certain project types. Again, in `Project`:
+
+```php
+public function usesCommands(): bool
+{
+    return $this->type == 'laravel';
+}
+```
+
+- Again, super basic, and will likely be extracted in the future.
+- I'm also flirting with the idea that I should add a check at the controller-level to ensure someone can't view or create new commands for projects that can't run them. This is definitely something I should add eventually, but I'm not too concerned about it yet. I'll add an issue for it.
