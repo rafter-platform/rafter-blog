@@ -28,8 +28,11 @@ function Bio() {
               }}
             />
             <p>
-              A blog about building <strong>Rafter</strong>, a serverless deployment platform. Posts by {author}.
-              {` `}
+              A blog about building{' '}
+              <a href="https://github.com/rafter-platform">
+                <strong>Rafter</strong>
+              </a>
+              , a serverless deployment platform. Posts by {author}.{` `}
               <a href={`https://twitter.com/${social.twitter}`}>
                 Follow Josh on Twitter for updates.
               </a>
