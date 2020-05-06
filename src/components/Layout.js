@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'gatsby'
 
 import { rhythm, scale } from '../utils/typography'
+import NewsletterForm from './NewsletterForm'
 
 export default function Layout({ location, title, children, wide }) {
   const rootPath = `${__PATH_PREFIX__}/`
@@ -62,11 +63,7 @@ export default function Layout({ location, title, children, wide }) {
     >
       {header}
       {children}
-      <footer>
-        © {new Date().getFullYear()}. Built with
-        {` `}
-        <a href="https://www.gatsbyjs.org">Gatsby</a>
-      </footer>
+      <NewsletterForm />
     </div>
   )
 }
